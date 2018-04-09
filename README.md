@@ -10,3 +10,7 @@ date time stamp can be extracted from object id as well
 ES 6 destructuring to read/assign a property value from an object to a variable
 Find with key and object id
 Mongoose : A MongoDB object modeling tool designed to work in an asynchronous environment.
+Mongoose : Model, Validators, Default, Type, Schema
+Express
+Body-parser : As express middlewear
+http status code

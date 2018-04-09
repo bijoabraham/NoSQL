@@ -1,30 +1,26 @@
-var mongoose = require('mongoose');
+var express = require('express');
+var bodyparser = require('body-parser');
+var mongoose = require('../db/mongoose');
+var {Note} = require('../model/note');
 
-//Specify the promise to use for mongoose
-mongoose.Promise = global.Promise;
-mongoose.connect("mongodb://localhost:27017/NoteApp");
+var app = express();
 
-//Model for the mongoose db
-var note =mongoose.model('note',{
-    title:{
-        type:String,
-        //Model validators
-        required:true,
-        minLength:3
-    },
-    description:{
-        type:String,
-        minlength:3
-    }
-});
-
-var newNote = new note({
-   title:'mongoose sample note',
-    description:'123'
-});
-
-newNote.save().then((doc)=>{
+//Set up middlewear
+app.use(bodyparser.json());
+app.post('/note',(req,res)=>{
+    console.log(req.body);
+    var newNote = new Note({
+        title:req.body.title,
+        description:req.body.description
+    });
+    newNote.save().then((doc)=>{
     console.log('New note from mongoose model',doc);
-}).catch((err)=>{
-    console.log('Error writing the note',err);
+    }).catch((err)=>{
+        console.log('Error writing the note',err);
+    });
+
+});
+
+app.listen(3000,()=>{
+    console.log("Server started...");
 });
