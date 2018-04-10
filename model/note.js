@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 
 //Model for the mongoose db
-var Note = mongoose.model('note',{
+var Note = mongoose.model('Note',{
     title:{
         type:String,
         //Model validators
@@ -14,4 +14,4 @@ var Note = mongoose.model('note',{
     }
 });
 
-module.export={Note};
+module.exports = {Note};
