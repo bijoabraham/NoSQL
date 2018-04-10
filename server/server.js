@@ -1,3 +1,4 @@
+var _ = require('lodash')
 var express = require('express');
 var bodyparser = require('body-parser');
 var {mongoose} = require('../db/mongoose');
@@ -61,6 +62,30 @@ app.delete('/note/:id',(req,res)=>{
         res.sendStatus(404);
     });
 });
+
+app.patch('/note/:id',(req,res)=>{
+    //Check validity of object id
+    if(!ObjectID.isValid(req.params.id)){
+       return res.sendStatus(404);
+    }
+    var body = _.pick(req.body,['title','description']);
+    Note.findOneAndUpdate({_id:new ObjectID(req.params.id)},{
+        $set:{
+            title : body.title,
+            description : body.description
+        }
+    },{
+        returnOrignal:false
+    }).then((doc)=>{
+        if(!doc){
+            return res.sendStatus(404);
+         }
+        res.send({doc});
+    }).catch((err)=>{
+        res.sendStatus(404);
+    });
+});
+
 
 app.listen(3000,()=>{
     console.log("Server started...");
