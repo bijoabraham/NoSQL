@@ -1,8 +1,9 @@
-var _ = require('lodash')
-var express = require('express');
-var bodyparser = require('body-parser');
-var {mongoose} = require('../db/mongoose');
-var {Note} = require('../model/note');
+const _ = require('lodash')
+const express = require('express');
+const bodyparser = require('body-parser');
+const {mongoose} = require('../db/mongoose');
+const {Note} = require('../model/note');
+const {User} = require('../model/user');
 const {ObjectID} = require("mongodb");
 
 var app = express();
@@ -83,6 +84,22 @@ app.patch('/note/:id',(req,res)=>{
         res.send({doc});
     }).catch((err)=>{
         res.sendStatus(404);
+    });
+});
+
+app.post('/users',(req,res)=>{ 
+    var body = _.pick(req.body,['email','password']);   
+    /*var user = new User({
+        email:req.body.email,
+        password:req.body.password
+    });*/
+    var user = new User(body);
+    user.save().then((doc)=>{
+        console.log('New user from mongoose model',doc.email);
+        res.send(doc.email);
+    }).catch((err)=>{
+        console.log('Error creating the user',err);
+        return res.status(400).send(err);
     });
 });
 
