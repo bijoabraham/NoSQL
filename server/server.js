@@ -122,9 +122,28 @@ var body = _.pick(req.body,['email','password','token']);
     });
 
 });
-//User
-app.get('/user/me',(req,res)=>{
+//Auth middleware
+var authenticate=(req,res,next)=>{
     var token = req.header("x-auth");
+    User.findByToken(token).then((user)=>{
+        if(user){
+            req.user=user;
+            req.token=token;
+            //Next needs to be called to execute the middleware
+            next();
+        }
+        else{
+            return Promise.reject();
+        }
+    }).catch((e)=>{
+        res.status(404).send();
+    });  
+};
+
+//Private route user
+app.get('/user/me',authenticate,(req,res)=>{
+    res.send(req.user);
+    /*var token = req.header("x-auth");
     User.findByToken(token).then((user)=>{
         if(user){
             res.send(user);
@@ -134,7 +153,7 @@ app.get('/user/me',(req,res)=>{
         }
     }).catch((e)=>{
         res.status(404).send();
-    });  
+    });  */
     });
 
 app.listen(3000,()=>{
