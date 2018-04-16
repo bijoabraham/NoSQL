@@ -34,12 +34,14 @@ var UserSchema = new mongoose.Schema({
         }
     }]
 });
+//instance methods
 UserSchema.methods.toJSON = function () {
     var user = this;
     var userObject = user.toObject();
   
     return _.pick(userObject, ['_id', 'email']);
   };
+//instance methods
 UserSchema.methods.generateAuthToken=function (){
     var user = this;
     var access="auth"
@@ -50,6 +52,25 @@ UserSchema.methods.generateAuthToken=function (){
         return token;
     });
 }
+//model methods ie statics method
+UserSchema.statics.findByToken =function(token){
+    var User =this;
+    var decoded;
+    try{
+        decoded=jwt.verify(token,"abc123");
+        /*console.log(`token ${token}`);
+        console.log(`token id ${decoded._id}`);
+        console.log(`token ${JSON.stringify(decoded)}`);*/
+    }catch(e){
+       console.log('Token finding err',e);
+       return Promise.reject();
+    }
+    return User.findOne({
+        _id:decoded._id,
+        'tokens.token':token,
+        'tokens.access':'auth'
+    });
+};
 
 var User = mongoose.model('User',UserSchema);
 
