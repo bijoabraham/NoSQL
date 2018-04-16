@@ -103,6 +103,25 @@ app.post('/users',(req,res)=>{
     });
 });
 
+//User
+app.post('/user',(req,res)=>{
+var body = _.pick(req.body,['email','password','token']);
+   var user = new User({
+        email:body.email,
+        password:body.password
+    });
+    user.save().then(()=>{
+        //console.log('New user from mongoose model',doc);
+        //res.send(doc);
+        return user.generateAuthToken();
+    }).then((token)=>{
+        res.header("x-auth",token).send(user);
+    }).catch((err)=>{
+        console.log('Error creating the user',err);
+        return res.status(400).send(err);
+    });
+
+});
 
 app.listen(3000,()=>{
     console.log("Server started...");
