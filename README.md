@@ -33,3 +33,9 @@
 6. User login
     user login is compared against the hashed password
     for valid user, a token is returned
+7. User logout
+    Use $pull of mongoose to remove token from the token array
+8. User uthenticate on notes
+    create author entry in note entry
+    Add authticate middlewear on note operations
+    ensure note matches with author id

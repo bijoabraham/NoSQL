@@ -11,6 +11,10 @@ var Note = mongoose.model('Note',{
     description:{
         type:String,
         minlength:3
+    },
+    _author:{
+        type:mongoose.Schema.Types.ObjectId,
+        required:true
     }
 });
 

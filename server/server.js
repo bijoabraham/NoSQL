@@ -10,11 +10,30 @@ var app = express();
 
 //Set up middlewear
 app.use(bodyparser.json());
-app.post('/note',(req,res)=>{
+//Auth middleware
+var authenticate=(req,res,next)=>{
+    var token = req.header("x-auth");
+    User.findByToken(token).then((user)=>{
+        if(user){
+            req.user=user;
+            req.token=token;
+            //Next needs to be called to execute the middleware
+            next();
+        }
+        else{
+            return Promise.reject();
+        }
+    }).catch((e)=>{
+        res.status(404).send();
+    });  
+};
+
+app.post('/note',authenticate,(req,res)=>{
     console.log(req.body);
    var note = new Note({
         title:req.body.title,
-        description:req.body.description
+        description:req.body.description,
+        _author:req.user._id
     });
     note.save().then((doc)=>{
         console.log('New note from mongoose model',doc);
@@ -26,20 +45,23 @@ app.post('/note',(req,res)=>{
 
 });
 
-app.get('/note',(req,res)=>{
-    Note.find().then((doc)=>{
+app.get('/note',authenticate,(req,res)=>{
+    Note.find({
+        _author:req.user._id
+    }).then((doc)=>{
         res.send({doc});
     }).catch((err)=>{
         res.sendStatus(404);
     });
 });
 
-app.get('/note/:id',(req,res)=>{
+app.get('/note/:id',authenticate,(req,res)=>{
     //Check validity of object id
     if(!ObjectID.isValid(req.params.id)){
        return res.sendStatus(404);
     }
-    Note.findById(req.params.id).then((doc)=>{
+    //Note.findById(req.params.id).then((doc)=>{
+    Note.findOne({_id:req.params.id,_author:req.user._id}).then((doc)=>{
         if(!doc){
             return res.sendStatus(404);
          }
@@ -49,12 +71,13 @@ app.get('/note/:id',(req,res)=>{
     });
 });
 
-app.delete('/note/:id',(req,res)=>{
+app.delete('/note/:id',authenticate,(req,res)=>{
     //Check validity of object id
     if(!ObjectID.isValid(req.params.id)){
        return res.sendStatus(404);
     }
-    Note.findByIdAndRemove(req.params.id).then((doc)=>{
+    //Note.findByIdAndRemove(req.params.id).then((doc)=>{
+    Note.findOneAndRemove({_id:req.params.id,_author:req.user._id}).then((doc)=>{
         if(!doc){
             return res.sendStatus(404);
          }
@@ -64,13 +87,14 @@ app.delete('/note/:id',(req,res)=>{
     });
 });
 
-app.patch('/note/:id',(req,res)=>{
+app.patch('/note/:id',authenticate,(req,res)=>{
     //Check validity of object id
     if(!ObjectID.isValid(req.params.id)){
        return res.sendStatus(404);
     }
     var body = _.pick(req.body,['title','description']);
-    Note.findOneAndUpdate({_id:new ObjectID(req.params.id)},{
+    //Note.findByIdAndUpdate(req.params.id,{
+    Note.findOneAndUpdate({_id:new ObjectID(req.params.id),_author:req.user._id},{
         $set:{
             title : body.title,
             description : body.description
@@ -122,23 +146,6 @@ var body = _.pick(req.body,['email','password','token']);
     });
 
 });
-//Auth middleware
-var authenticate=(req,res,next)=>{
-    var token = req.header("x-auth");
-    User.findByToken(token).then((user)=>{
-        if(user){
-            req.user=user;
-            req.token=token;
-            //Next needs to be called to execute the middleware
-            next();
-        }
-        else{
-            return Promise.reject();
-        }
-    }).catch((e)=>{
-        res.status(404).send();
-    });  
-};
 
 //Private route user
 app.get('/user/me',authenticate,(req,res)=>{
@@ -166,6 +173,14 @@ app.post('/user/login',(req,res)=>{
     }).catch((err)=>{
         res.status(400).send(err);
     });
+});
+
+app.delete('/user/me/logout',authenticate,(req,res)=>{    
+   req.user.removeToken(req.token).then(()=>{
+       res.status(200).send("Successfully logged out");
+   }).catch(()=>{
+       res.status(400).send();
+   })
 });
 
 app.listen(3000,()=>{
