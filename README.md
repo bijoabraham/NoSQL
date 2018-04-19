@@ -25,3 +25,7 @@
     crypto-js : SHA256 , hashing and salting for token
     hashing is a one way algorithm
     generate jwt token to each user created and send back as response header
+
+5. Hash password and store in db
+    bcryptjs
+    mongoose middleware - run fxn before or after an event

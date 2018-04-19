@@ -1,5 +1,5 @@
 var {SHA256} = require('crypto-js');
-
+var bcrypt = require('bcryptjs');
 console.log(`hash of test is :${SHA256('test').toString()}`)
 var data={
     id:1
@@ -30,4 +30,17 @@ var jwtToken=jwt.sign(data,'abc123');
 console.log(`JWT token ${jwtToken}`);
 var decodedData =jwt.verify(jwtToken,'abc123');
 console.log(`decoded from JWT :${JSON.stringify(decodedData)}`);
+
+//Storing plaing password to DB is not a good practice, you can password + salt cab be hashed and stored in the DB
+
+var password ="test";
+bcrypt.genSalt(10,(err,salt)=>{
+    bcrypt.hash(password,salt,(err,hash)=>{
+        console.log("hash -"+hash);
+    });
+});
+
+bcrypt.compare(password,'$2a$10$JDGrIDSFRGGvoQ8BQ4ZlGOqkZJMfN1KCDeGZADs87NnAmPqbR5neK',(err,result)=>{
+    console.log(result);
+});
 
