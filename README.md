@@ -29,3 +29,7 @@
 5. Hash password and store in db
     bcryptjs
     mongoose middleware - run fxn before or after an event
+
+6. User login
+    user login is compared against the hashed password
+    for valid user, a token is returned
